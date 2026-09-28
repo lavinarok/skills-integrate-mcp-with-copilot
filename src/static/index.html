@@ -8,8 +8,15 @@
   </head>
   <body>
     <header>
-      <h1>Mergington High School</h1>
-      <h2>Extracurricular Activities</h2>
+      <div class="header-content">
+        <div>
+          <h1>Mergington High School</h1>
+          <h2>Extracurricular Activities</h2>
+        </div>
+        <button type="button" id="theme-toggle" class="theme-toggle" aria-pressed="false">
+          Dark mode
+        </button>
+      </div>
     </header>
 
     <main>
@@ -39,26 +46,23 @@
           <p>Loading activities...</p>
         </div>
       </section>
-
-      <section id="signup-container">
-        <h3>Sign Up for an Activity</h3>
-        <form id="signup-form">
-          <div class="form-group">
-            <label for="email">Student Email:</label>
-            <input type="email" id="email" required placeholder="your-email@mergington.edu" />
-          </div>
-          <div class="form-group">
-            <label for="activity">Select Activity:</label>
-            <select id="activity" required>
-              <option value="">-- Select an activity --</option>
-              <!-- Activity options will be loaded here -->
-            </select>
-          </div>
-          <button type="submit">Sign Up</button>
-        </form>
-        <div id="message" class="hidden"></div>
-      </section>
     </main>
+
+    <dialog id="registration-dialog" aria-labelledby="registration-title">
+      <form method="dialog" id="signup-form" class="registration-form">
+        <button type="button" id="close-dialog" class="dialog-close" aria-label="Close registration dialog">&times;</button>
+        <p class="eyebrow">Register a student</p>
+        <h2 id="registration-title">Sign up for an activity</h2>
+        <p id="selected-activity" class="selected-activity"></p>
+        <label for="email">Student email</label>
+        <input type="email" id="email" required placeholder="your-email@mergington.edu" />
+        <div class="dialog-actions">
+          <button type="button" id="cancel-registration" class="secondary-button">Cancel</button>
+          <button type="submit">Sign up</button>
+        </div>
+        <div id="message" class="hidden" role="status"></div>
+      </form>
+    </dialog>
 
     <footer>
       <p>&copy; 2026 Mergington High School</p>

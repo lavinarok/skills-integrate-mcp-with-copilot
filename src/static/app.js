@@ -1,12 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
   const activitiesList = document.getElementById("activities-list");
-  const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const registrationDialog = document.getElementById("registration-dialog");
+  const selectedActivity = document.getElementById("selected-activity");
+  const emailInput = document.getElementById("email");
+  const themeToggle = document.getElementById("theme-toggle");
   const searchInput = document.getElementById("search");
   const categorySelect = document.getElementById("category");
   const sortSelect = document.getElementById("sort");
   let allActivities = {};
+  let activityForRegistration = "";
+
+  function setTheme(theme) {
+    const isDark = theme === "dark";
+    document.body.classList.toggle("dark-mode", isDark);
+    themeToggle.textContent = isDark ? "Light mode" : "Dark mode";
+    themeToggle.setAttribute("aria-pressed", String(isDark));
+    localStorage.setItem("mergington-theme", theme);
+  }
+
+  function openRegistration(activityName) {
+    activityForRegistration = activityName;
+    selectedActivity.textContent = activityName;
+    messageDiv.className = "hidden";
+    signupForm.reset();
+    registrationDialog.showModal();
+    emailInput.focus();
+  }
+
+  function closeRegistration() {
+    registrationDialog.close();
+    activityForRegistration = "";
+  }
 
   function renderActivities() {
     const searchTerm = searchInput.value.trim().toLowerCase();
@@ -61,6 +87,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <p>${details.description}</p>
         <p><strong>Schedule:</strong> ${details.schedule}</p>
         <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+        <button type="button" class="register-btn" data-activity="${name}">
+          Register student
+        </button>
         <div class="participants-container">
           ${participantsHTML}
         </div>
@@ -71,6 +100,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".delete-btn").forEach((button) => {
       button.addEventListener("click", handleUnregister);
+    });
+    document.querySelectorAll(".register-btn").forEach((button) => {
+      button.addEventListener("click", () => openRegistration(button.dataset.activity));
     });
   }
 
@@ -92,16 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
         option.textContent = category;
         categorySelect.appendChild(option);
       });
-
-      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
-      Object.keys(activities)
-        .sort()
-        .forEach((name) => {
-          const option = document.createElement("option");
-          option.value = name;
-          option.textContent = name;
-          activitySelect.appendChild(option);
-        });
 
       renderActivities();
     } catch (error) {
@@ -154,12 +176,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Handle form submission
+  // Handle registration from the activity card dialog
   signupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const activity = document.getElementById("activity").value;
+    const email = emailInput.value;
+    const activity = activityForRegistration;
 
     try {
       const response = await fetch(
@@ -176,10 +198,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (response.ok) {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
-        signupForm.reset();
 
         // Refresh activities list to show updated participants
         fetchActivities();
+        setTimeout(closeRegistration, 700);
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
@@ -202,6 +224,17 @@ document.addEventListener("DOMContentLoaded", () => {
   searchInput.addEventListener("input", renderActivities);
   categorySelect.addEventListener("change", renderActivities);
   sortSelect.addEventListener("change", renderActivities);
+  document.getElementById("close-dialog").addEventListener("click", closeRegistration);
+  document.getElementById("cancel-registration").addEventListener("click", closeRegistration);
+  registrationDialog.addEventListener("click", (event) => {
+    if (event.target === registrationDialog) closeRegistration();
+  });
+  themeToggle.addEventListener("click", () => {
+    const nextTheme = document.body.classList.contains("dark-mode") ? "light" : "dark";
+    setTheme(nextTheme);
+  });
+
+  setTheme(localStorage.getItem("mergington-theme") || "light");
 
   // Initialize app
   fetchActivities();
